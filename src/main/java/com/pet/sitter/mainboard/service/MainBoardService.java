@@ -32,7 +32,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,7 +54,6 @@ public class MainBoardService {
     @Autowired
     private WeekRepository weekRepository;
 
-
     //게시글 목록 조회
     public Page<PetSitterDTO> getList(int page) {
         List<Sort.Order> sorts = new ArrayList<>();
@@ -69,6 +70,7 @@ public class MainBoardService {
                             .build())
                     .collect(Collectors.toList());
             petSitterDTO.setFileDTOList(petSitterFileDTOList);
+
             return petSitterDTO;
         });
         return petSitterDTOPage;
@@ -81,8 +83,9 @@ public class MainBoardService {
         sorts.add(Sort.Order.desc("petRegdate"));
         Pageable pageable = PageRequest.of(page, 12, Sort.by(sorts));
         Optional<Member> memberOptional = memberRepository.findBymemberId(name);
-        if(kakao!=null){
-            if(memberOptional.isEmpty()){
+
+        if (kakao != null) {
+            if (memberOptional.isEmpty()) {
                 Page<Petsitter> petsitterPage = petsitterRepository.findAll(pageable);
                 Page<PetSitterDTO> petSitterDTOPage = petsitterPage.map(petsitter -> {
                     PetSitterDTO petSitterDTO = PetSitterDTO.builder().petsitter(petsitter).build();
@@ -92,16 +95,16 @@ public class MainBoardService {
                                     .build())
                             .collect(Collectors.toList());
                     petSitterDTO.setFileDTOList(petSitterFileDTOList);
+
                     return petSitterDTO;
                 });
                 return petSitterDTOPage;
             }
         }
+
         Member member = memberOptional.get();
         String memberAddress = member.getAddress().substring(0, 2);
-        System.out.println("memberAddress(회원 지역) = "+memberAddress);
         Page<Petsitter> petsitterPage = petsitterRepository.findAllByPetAddressContaining(pageable, memberAddress);
-        System.out.println(petsitterPage.getTotalPages());
         Page<PetSitterDTO> petSitterDTOPage = petsitterPage.map(petsitter -> {
             PetSitterDTO petSitterDTO = PetSitterDTO.builder().petsitter(petsitter).build();
             List<PetSitterFileDTO> petSitterFileDTOList = petsitter.getPetsitterFileList().stream()
@@ -110,11 +113,11 @@ public class MainBoardService {
                             .build())
                     .collect(Collectors.toList());
             petSitterDTO.setFileDTOList(petSitterFileDTOList);
+
             return petSitterDTO;
         });
         return petSitterDTOPage;
     }
-
 
     /*
     //무한 스크롤
@@ -133,35 +136,39 @@ public class MainBoardService {
     }
     */
 
-
     //게시글 상세 조회
     public PetSitterDTO getDetail(Long no) {
         Petsitter petsitterEntity = petsitterRepository.findBySitterNo(no);
         PetSitterDTO petSitterDTO = PetSitterDTO.builder().petsitter(petsitterEntity).build();
         petSitterDTO.setMember(MemberDTO.builder().member(petsitterEntity.getMember()).build());
+
         if (!petsitterEntity.getWeekList().isEmpty()) {
             List<WeekDTO> weekDTOList = new ArrayList<>();
+
             for (int i = 0; i < petsitterEntity.getWeekList().size(); i++) {
                 WeekDTO weekDTO = WeekDTO.builder().week(petsitterEntity.getWeekList().get(i)).build();
                 weekDTOList.add(weekDTO);
             }
+
             petSitterDTO.setWeekDTOList(weekDTOList);
         }
+
         if (!petsitterEntity.getPetsitterFileList().isEmpty()) {
             List<PetSitterFileDTO> petSitterFileDTOList = new ArrayList<>();
+
             for (int i = 0; i < petsitterEntity.getPetsitterFileList().size(); i++) {
                 PetSitterFileDTO petSitterFileDTO = PetSitterFileDTO.builder().petsitterFile(petsitterEntity.getPetsitterFileList().get(i)).build();
                 petSitterFileDTOList.add(petSitterFileDTO);
             }
+
             petSitterDTO.setFileDTOList(petSitterFileDTOList);
         }
-        System.out.println("파일 출력 = " + petSitterDTO.getFileDTOList());
         return petSitterDTO;
     }
 
-    @Transactional
     //게시글 검색
-    public Page<PetSitterDTO> searchList(int page, String category, String petCategory, String petAddress, String day, String timeStr){
+    @Transactional
+    public Page<PetSitterDTO> searchList(int page, String category, String petCategory, String petAddress, String day, String timeStr) {
         List<Sort.Order> sorts = new ArrayList<>();
         sorts.add(Sort.Order.desc("petViewCnt"));
         sorts.add(Sort.Order.desc("petRegdate"));
@@ -172,20 +179,18 @@ public class MainBoardService {
         int endTimeHour = 0;
 
         switch (day) {
-            case "weekday":
+            case "weekday" -> {
                 dayList.add("월");
                 dayList.add("화");
                 dayList.add("수");
                 dayList.add("목");
                 dayList.add("금");
-                break;
-            case "weekend":
+            }
+            case "weekend" -> {
                 dayList.add("토");
                 dayList.add("일");
-                break;
-            case "allDay":
-                dayList = null;
-                break;
+            }
+            case "allDay" -> dayList = null;
         }
 
         switch (timeStr) {
@@ -224,6 +229,7 @@ public class MainBoardService {
                             .build())
                     .collect(Collectors.toList());
             petSitterDTO.setWeekDTOList(weekDTOList);
+
             return petSitterDTO;
         });
         return petSitterDTOPage;
@@ -250,25 +256,21 @@ public class MainBoardService {
                             .build())
                     .collect(Collectors.toList());
             petSitterDTO.setWeekDTOList(weekDTOList);
+
             return petSitterDTO;
         });
         return petSitterDTOPage;
     }
 
-
-
-    //************************************************혜지시작
     //글작성
     public void write(PetSitterDTO petSitterDTO, String id, MultipartFile[] boardFile) throws IOException {
-        logger.info("MainBoardService-write()진입");
-
-
         //로그인한 유저정보 받아옴
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String username = userDetails.getUsername();
         Optional<Member> memberOptional = memberRepository.findBymemberId(id);
         Member member = new Member();
+
         if (memberOptional.isPresent()) {
             member = memberOptional.get();
         }
@@ -282,7 +284,6 @@ public class MainBoardService {
         petSitterDTO.setPetAddress(petAddress);
 
         // id 정보 담아주고, MySQL에서 기본값 설정이 JPA에선 안먹어서 다시 설정해줌
-        logger.info("Member 정보 : {}", member);
         Petsitter petsitter = petSitterDTO.toEntity();
         petsitter.setMember(member);
         petsitter.setLikeCnt(0);
@@ -293,12 +294,12 @@ public class MainBoardService {
             petsitter.setPrice(0);
         }
 
-
         Long saveId = petsitterRepository.save(petsitter).getSitterNo();
         Petsitter board = petsitterRepository.findById(saveId).get();
 
         // 요일 데이터 저장 로직
         List<Week> weekList = new ArrayList<>();
+
         for (WeekDTO weekDTO : petSitterDTO.getWeekDTOList()) {
             Week week = new Week();
             week.setPetsitter(board);
@@ -314,6 +315,7 @@ public class MainBoardService {
 
             String uploadDirectory = "C:/uploadfile/petsitter_img/";
             File directory = new File(uploadDirectory);
+
             if (!directory.exists()) {
                 directory.mkdirs();
             }
@@ -338,15 +340,11 @@ public class MainBoardService {
                 petsitterFileRepository.save(petsitterFile);
             }
             petsitterRepository.save(petsitter);
-
         }
-
     }
 
     //게시글 수정
-    public void update(WriteForm writeForm, Long sitterNo,MultipartFile[] boardFile, String id) throws IOException {
-        logger.info("MainBoardService-update()진입");
-
+    public void update(WriteForm writeForm, Long sitterNo, MultipartFile[] boardFile, String id) throws IOException {
         Petsitter existingPost = petsitterRepository.findBySitterNo(sitterNo);
 
         if (existingPost == null) {
@@ -359,12 +357,12 @@ public class MainBoardService {
         String username = userDetails.getUsername();
         Optional<Member> memberOptional = memberRepository.findBymemberId(id);
         Member member = new Member();
+
         if (memberOptional.isPresent()) {
             member = memberOptional.get();
         }
 
         // id 정보 담아주고, MySQL에서 기본값 설정이 JPA에선 안먹어서 다시 설정해줌
-        logger.info("Member 정보 : {}", member);
         existingPost.setMember(member);
         existingPost.setLikeCnt(0);
         existingPost.setPetRegdate(LocalDateTime.now());
@@ -396,7 +394,6 @@ public class MainBoardService {
         if (boardFile[0].isEmpty()) { //파일이 없을 때
             petsitterRepository.save(existingPost);
         } else { //파일이 있을 때
-
             Long saveId = petsitterRepository.save(petsitter).getSitterNo(); //현재 입력한 글번호를 받아오는 코드
             Petsitter board = petsitterRepository.findById(saveId).get();
 
@@ -430,21 +427,16 @@ public class MainBoardService {
 
                 petsitterFileRepository.save(petsitterFile);
             }
-            //petsitterRepository.save(petsitter);
         }
     }
 
-
     //게시글 삭제
-    public void delete (Long sitterNo, String id) {
-        logger.info("MainBoardService-delete() 진입");
-
+    public void delete(Long sitterNo, String id) {
         Petsitter existingPost = petsitterRepository.findBySitterNo(sitterNo);
 
         if (existingPost == null) {
             throw new DataNotFoundException("게시글을 찾을 수 없습니다.");
         }
-
 
         // 게시글 작성자와 로그인한 유저가 동일한지 확인
         if (!existingPost.getMember().getMemberId().equals(id)) {
@@ -461,25 +453,24 @@ public class MainBoardService {
 
     @Transactional
     //게시글 조회수 증가
-    public int updateViews (Long no) {
+    public int updateViews(Long no) {
         return petsitterRepository.updateViews(no);
     }
 
     @Transactional
     //추천수 증가
-    public int incrementLikes (Long no) {
+    public int incrementLikes(Long no) {
         return petsitterRepository.updateLike(no);
     }
 
-
     @Transactional
-    public Page<PetSitterDTO> titleSearch(String keyword,int page) {
+    public Page<PetSitterDTO> titleSearch(String keyword, int page) {
         List<Sort.Order> sorts = new ArrayList<>();
 
         sorts.add(Sort.Order.desc("petRegdate"));
         Pageable pageable = PageRequest.of(page, 12, Sort.by(sorts));
 
-        Page<Petsitter> titleSearchPage  = petsitterRepository.findByPetTitleContaining(pageable,keyword);
+        Page<Petsitter> titleSearchPage = petsitterRepository.findByPetTitleContaining(pageable, keyword);
         Page<PetSitterDTO> petSitterDTOPage = titleSearchPage.map(petsitter -> {
             PetSitterDTO petSitterDTO = PetSitterDTO.builder().petsitter(petsitter).build();
             List<PetSitterFileDTO> petSitterFileDTOList = petsitter.getPetsitterFileList().stream()
@@ -494,6 +485,7 @@ public class MainBoardService {
                             .build())
                     .collect(Collectors.toList());
             petSitterDTO.setWeekDTOList(weekDTOList);
+            
             return petSitterDTO;
         });
         return petSitterDTOPage;

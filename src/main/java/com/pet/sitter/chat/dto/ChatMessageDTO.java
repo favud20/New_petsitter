@@ -2,7 +2,10 @@ package com.pet.sitter.chat.dto;
 
 import com.pet.sitter.common.entity.ChatMessage;
 import com.pet.sitter.member.dto.MemberDTO;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -17,9 +20,8 @@ public class ChatMessageDTO {
     private String content; // 메시지
     private LocalDateTime sendTime;//보낸시간
 
-
     @Builder
-    public ChatMessageDTO (ChatMessage chatMessage) {
+    public ChatMessageDTO(ChatMessage chatMessage) {
         this.id = chatMessage.getId();
         this.sender = MemberDTO.builder().member(chatMessage.getSender()).build();
         this.content = chatMessage.getContent();
@@ -33,5 +35,4 @@ public class ChatMessageDTO {
         this.content = content;
         this.sendTime = sendTime;
     }
-
 }

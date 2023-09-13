@@ -10,18 +10,12 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-
-
 public interface PetsitterRepository extends JpaRepository<Petsitter, Long>, JpaSpecificationExecutor<Petsitter> {
 
     //페이지네이션
     Page<Petsitter> findAll(Pageable pageable);
-    Page<Petsitter> findAllByPetAddressContaining(Pageable pageable, String petAddress);
 
-    //무한 스크롤
-    //Page<Petsitter> findAllBySitterNoLessThanOrderByPetRegdateDesc(Pageable page, Long sitterNo);
+    Page<Petsitter> findAllByPetAddressContaining(Pageable pageable, String petAddress);
 
     //상세페이지 조회
     Petsitter findBySitterNo(Long sitterNo);
@@ -29,28 +23,19 @@ public interface PetsitterRepository extends JpaRepository<Petsitter, Long>, Jpa
     //카테고리 검색
     Page<Petsitter> findAll(Specification<Petsitter> spec, Pageable pageable);
 
-    //추천
-    //List<Petsitter> findByPetCategoryAndPetAddressOrderByPetRegdateDesc(String petCategory, String petAddress);
-
-    //*****************혜지
     //삭제
-    Petsitter deleteBySitterNo (Long sitterNo);
+    Petsitter deleteBySitterNo(Long sitterNo);
 
     //조회수
     @Modifying
-    @Query ("update Petsitter p set p.petViewCnt = p.petViewCnt + 1 where p.sitterNo = :sitterNo")
+    @Query("update Petsitter p set p.petViewCnt = p.petViewCnt + 1 where p.sitterNo = :sitterNo")
     int updateViews(@Param("sitterNo") Long no);
-
 
     //좋아요
     @Modifying
-    @Query ("update Petsitter p set p.likeCnt = p.likeCnt + 1 where p.sitterNo = :sitterNo")
-    int updateLike (@Param("sitterNo") Long sitterNo);
-
-/*    //제목으로 검색
-    List<Petsitter> findByPetTitleContaining (String keyword);*/
+    @Query("update Petsitter p set p.likeCnt = p.likeCnt + 1 where p.sitterNo = :sitterNo")
+    int updateLike(@Param("sitterNo") Long sitterNo);
 
     //제목 페이징 정렬검색
-    Page<Petsitter> findByPetTitleContaining (Pageable pageable, String keyword);
-
+    Page<Petsitter> findByPetTitleContaining(Pageable pageable, String keyword);
 }

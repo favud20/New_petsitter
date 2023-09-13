@@ -1,11 +1,8 @@
 package com.pet.sitter.chat.service;
 
-import com.pet.sitter.chat.controller.ChatMessageController;
 import com.pet.sitter.chat.dto.ChatRoomDTO;
-import com.pet.sitter.chat.repository.ChatMessageRepository;
 import com.pet.sitter.chat.repository.ChatRoomRepository;
 import com.pet.sitter.chat.repository.MatchingRepository;
-import com.pet.sitter.common.entity.ChatMessage;
 import com.pet.sitter.common.entity.ChatRoom;
 import com.pet.sitter.common.entity.Matching;
 import com.pet.sitter.common.entity.Petsitter;
@@ -47,6 +44,7 @@ public class ChatRoomService {
 
     public ChatRoomDTO createChatRoom(Long id, String hostId, String guestId) {
         Petsitter petsitter = petsitterRepository.findBySitterNo(id);
+
         if (chatRoomRepository.findChatRoomByPetsitterAndGuestId(petsitter, guestId) == null) {
             ChatRoom chatRoom = new ChatRoom();
 
@@ -67,10 +65,9 @@ public class ChatRoomService {
             return convertToChatRoomDTO(savedChatRoom);
         } else {
             ChatRoom chatRoom = chatRoomRepository.findChatRoomByPetsitterAndGuestId(petsitter, guestId);
+
             return convertToChatRoomDTO(chatRoom);
         }
-
-
     }
 
     public ChatRoom getChatRoomById(Long id) {
@@ -86,23 +83,17 @@ public class ChatRoomService {
         chatRoomDTO.setId(chatRoom.getId());
         chatRoomDTO.setRoomUUID(chatRoom.getRoomUUID());
         chatRoomDTO.setCreateDate(chatRoom.getCreateDate());
-        System.out.println("chatRoomDTO_ID: " + chatRoomDTO.getId());
+
         return chatRoomDTO;
     }
 
     public String getChatRoomUUIDById(Long roomId) {
         ChatRoom chatRoom = chatRoomRepository.findById(roomId).orElseThrow(() -> new RuntimeException("Room not Found"));
+
         return chatRoom.getRoomUUID();
     }
 
     public Matching getMatchingByRoomId(Long roomId) {
-        System.out.println("before: " + roomId);
-        Matching matching = matchingRepository.findMatchingByChatRoomNo(roomId);
-        if (matching == null) {
-            return null;
-        } else {
-            System.out.println("after: " + roomId + " | " + matching);
-            return matching;
-        }
+        return matchingRepository.findMatchingByChatRoomNo(roomId);
     }
 }

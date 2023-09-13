@@ -5,7 +5,11 @@ import com.pet.sitter.admin.member.repository.AdminMemberRepository;
 import com.pet.sitter.common.entity.Member;
 import com.pet.sitter.member.dto.MemberDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,16 +39,18 @@ public class AdminMemberService {
             memberDTO.setAddress(member.getAddress());
             memberDTO.setNickname(member.getNickname());
             memberDTO.setIsshow(member.getIsshow());
+
             return memberDTO;
         }).getContent();
 
-        return new PageImpl<>(memberDTOList,pageable,memberPage.getTotalElements());
+        return new PageImpl<>(memberDTOList, pageable, memberPage.getTotalElements());
     }
 
     //회원 상세 조회
-    public MemberDTO getMemberDetail(Long id){
-        Optional<Member> optionalMember=adminMemberRepository.findById(id);
-        if(!optionalMember.isPresent()){
+    public MemberDTO getMemberDetail(Long id) {
+        Optional<Member> optionalMember = adminMemberRepository.findById(id);
+
+        if (!optionalMember.isPresent()) {
             return null;
         }
 
@@ -58,17 +64,20 @@ public class AdminMemberService {
         memberDTO.setPhone(member.getPhone());
         memberDTO.setAddress(member.getAddress());
         memberDTO.setEMail(member.getEMail());
+
         return memberDTO;
     }
 
     //수정처리
     public void modify(Long id, String memberId, String name,
-                       String nickname,String birth,String phone,String address,String eMail) {
+                       String nickname, String birth, String phone, String address, String eMail) {
         Optional<Member> memberOptional = adminMemberRepository.findById(id);
-        if(memberOptional.isEmpty()){
+
+        if (memberOptional.isEmpty()) {
             throw new DataNotFoundException("No Member");
         }
-        Member member =memberOptional.get();
+
+        Member member = memberOptional.get();
         member.setId(id);
         member.setMemberId(memberId);
         member.setName(name);
@@ -79,20 +88,20 @@ public class AdminMemberService {
         member.setEMail(eMail);
         adminMemberRepository.save(member);
     }
+
     public Member getModify(Long id) {
         Optional<Member> member = adminMemberRepository.findById(id);
+
         if (!member.isPresent()) {
             throw new DataNotFoundException("오류났어요....");
         }
+
         return member.get();
     }
 
     //삭제처리
     @Transactional
-    public void delete(Long id) {adminMemberRepository.deleteById(id);
+    public void delete(Long id) {
+        adminMemberRepository.deleteById(id);
     }
-
-
-
-
 }

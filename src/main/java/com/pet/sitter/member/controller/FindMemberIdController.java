@@ -15,12 +15,9 @@ import java.util.Optional;
 @RequestMapping("/member")
 @RequiredArgsConstructor
 @Controller
-
 public class FindMemberIdController {
 
-
     private final MemberRepository memberRepository;
-
 
     @GetMapping("/memberid")
     public ResponseEntity<String> getEmailByPhoneNumber(@RequestParam String phone) {
@@ -37,24 +34,6 @@ public class FindMemberIdController {
 
     @PostMapping("/pw")
     public ResponseEntity<String> getPassword(@RequestParam String memberId) {
-        // 여기에서 이메일을 사용하여 필요한 작업을 수행합니다.
-        // 예를 들어, 데이터베이스에서 사용자를 찾고 비밀번호를 가져오는 작업을 수행할 수 있습니다.
-
-        // 이 예제에서는 간단하게 이메일을 응답으로 다시 보내는 것으로 대체하겠습니다.
         return ResponseEntity.ok("서버에서 받은 아이디: " + memberId);
     }
-
-
-
-
-
-
-
-
 }
-
-
-
-
-
-

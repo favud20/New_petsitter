@@ -1,6 +1,9 @@
 package com.pet.sitter.qna.service;
 
-import com.pet.sitter.common.entity.*;
+import com.pet.sitter.common.entity.Answer;
+import com.pet.sitter.common.entity.Member;
+import com.pet.sitter.common.entity.Question;
+import com.pet.sitter.common.entity.QuestionFile;
 import com.pet.sitter.qna.dto.QuestionDTO;
 import com.pet.sitter.qna.repository.QuestionFileRepository;
 import com.pet.sitter.qna.repository.QuestionRepository;
@@ -11,11 +14,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -27,8 +26,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-
 public class QuestionService {
+
     private final QuestionRepository questionRepository;
     private final QuestionFileRepository questionFileRepository;
 
@@ -38,13 +37,10 @@ public class QuestionService {
         this.questionFileRepository = questionFileRepository;
     }
 
-
-    //Entity --> DTO 변환
     //Question 글 등록
 
     @Transactional
     public void savePost(QuestionDTO questionDTO, QuestionForm questionForm, MultipartFile[] file, Member member) throws IOException {
-
         //질문게시판 엔티티생성
         Question question = Question.builder()
                 .qnaNo(questionForm.getQnaNo())
@@ -70,6 +66,7 @@ public class QuestionService {
             if (!directory.exists()) {
                 directory.mkdirs();
             }
+
             for (MultipartFile qFile : file) {
                 String originalFilename = qFile.getOriginalFilename();
                 String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
@@ -93,37 +90,33 @@ public class QuestionService {
         }
     }
 
-
     //Question게시판 목록 전체조회
     @Transactional
-    public Page<Question> questionList(int page){
-        List <Sort.Order> sorts = new ArrayList();
+    public Page<Question> questionList(int page) {
+        List<Sort.Order> sorts = new ArrayList();
         sorts.add(Sort.Order.desc("qnaDate"));
         Pageable pageable = PageRequest.of(page, 10, Sort.by(sorts));
-        return questionRepository.findAll(pageable);
 
+        return questionRepository.findAll(pageable);
     }
 
     //Question게시판 상세내용
     @Transactional
-    public QuestionDTO detail(Long qnaNo){
+    public QuestionDTO detail(Long qnaNo) {
         Optional<Question> questionOptional = questionRepository.findById(qnaNo);
-        if(questionOptional.isPresent()) {
+
+        if (questionOptional.isPresent()) {
             Question question = questionOptional.get();
             question.increaseViewCount();
             questionRepository.save(question);
 
-            List<Answer> answerList = new ArrayList<>();
-            for(Answer answer : question.getAnswerList()){
-                answerList.add(answer);
-            }
+            List<Answer> answerList = new ArrayList<>(question.getAnswerList());
 
-            List<QuestionFile> fileList = new ArrayList<>(); // NoticeFile을 담을 리스트 선언
-            for (QuestionFile questionFile : question.getQuestionList()) {
-                fileList.add(questionFile); // NoticeFile을 리스트에 추가
-            }
+            // NoticeFile을 리스트에 추가
+            // NoticeFile을 담을 리스트 선언
+            List<QuestionFile> fileList = new ArrayList<>(question.getQuestionList());
 
-            QuestionDTO questionDTO = QuestionDTO.builder()
+            return QuestionDTO.builder()
                     .qnaNo(question.getQnaNo())
                     .qnaTitle(question.getQnaTitle())
                     .qnaDate(question.getQnaDate())
@@ -133,8 +126,8 @@ public class QuestionService {
                     .questionList(fileList)
                     .answerList(answerList)
                     .build();
-            return questionDTO;
         }
+
         return null;
     }
 
@@ -143,13 +136,13 @@ public class QuestionService {
     public void update(Long qnaNo, QuestionDTO questionDTO, MultipartFile[] newImageFiles) throws IOException {
         Optional<Question> questionOptional = questionRepository.findById(qnaNo);
 
-        if(questionOptional.isPresent()){
+        if (questionOptional.isPresent()) {
             Question question = questionOptional.get();
             question.setQnaTitle(questionDTO.getQnaTitle());
             question.setQnaContent(questionDTO.getQnaContent());
 
-            // 기존 파일 삭제
             List<QuestionFile> filesToDelete = question.getQuestionList();
+
             for (QuestionFile delete : filesToDelete) {
                 String filePath = delete.getQSavedPath();
                 File fileToDelete = new File(filePath);
@@ -157,6 +150,7 @@ public class QuestionService {
                     fileToDelete.delete();
                 }
             }
+
             // 기존 파일 정보 삭제
             question.getQuestionList().clear();
 
@@ -165,6 +159,7 @@ public class QuestionService {
                 String path = "C:/uploadfile/question_img/";
 
                 File directory = new File(path);
+
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
@@ -174,6 +169,7 @@ public class QuestionService {
                 for (MultipartFile qnaFile : newImageFiles) {
                     String originalFilename = qnaFile.getOriginalFilename();
                     // null 또는 빈 문자열인 경우 처리를 하지 않도록 조건을 추가
+
                     if (originalFilename != null && !originalFilename.isEmpty()) {
                         String fileExtension = originalFilename.substring(originalFilename.lastIndexOf("."));
                         String newFileName = UUID.randomUUID().toString() + fileExtension;
@@ -191,16 +187,20 @@ public class QuestionService {
                         newQuestionFiles.add(questionFile); // 새로운 파일 정보를 리스트에 추가
                     }
                 }
+
                 question.getQuestionList().addAll(newQuestionFiles);
             }
+
             // 수정된 질문을 저장
             questionRepository.save(question);
         }
     }
+
     //Question게시판 삭제
     @Transactional
     public void delete(Long qnaNo) {
         Optional<Question> questionOptional = questionRepository.findById(qnaNo);
+
         if (questionOptional.isPresent()) {
             Question question = questionOptional.get();
             questionRepository.delete(question);
@@ -225,8 +225,4 @@ public class QuestionService {
 
         return "notfound"; // 해당 글이 없음
     }
-
 }
-
-
-

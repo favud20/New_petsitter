@@ -8,6 +8,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AdminBoardForm {
+
     @NotEmpty(message = "제목은 필수입력입니다")
     private String petTitle;//제목
 

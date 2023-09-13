@@ -1,8 +1,5 @@
 package com.pet.sitter.mainboard.controller;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pet.sitter.common.entity.Petsitter;
 import com.pet.sitter.mainboard.dto.PetSitterDTO;
 import com.pet.sitter.mainboard.service.MainBoardService;
 import com.pet.sitter.mainboard.validation.WriteForm;
@@ -13,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -24,11 +20,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-
 import java.io.IOException;
 import java.security.Principal;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RequestMapping("/mainboard")
 @Controller
@@ -43,26 +37,29 @@ public class MainBoardController {
     @Autowired
     public MemberService memberService;
 
-
     //페이지네이션
     @GetMapping("/list")
     public String getList(Model model, @RequestParam(value = "page", defaultValue = "0") int page, Principal principal, @AuthenticationPrincipal OAuth2User user) {
         Page<PetSitterDTO> petSitterPage = null;
         String kakao = "";
-        if(user==null){
+
+        if (user == null) {
             kakao = "kakao";
         }
-        if (principal!=null) {
-                System.out.println("회원 인데 카카오?");
-                petSitterPage = mainBoardService.getListByMember(principal.getName(), kakao, page);
-                System.out.println("회원 인데 카카오 아님");
+
+        if (principal != null) {
+            System.out.println("회원 인데 카카오?");
+            petSitterPage = mainBoardService.getListByMember(principal.getName(), kakao, page);
+            System.out.println("회원 인데 카카오 아님");
         } else {
             System.out.println("회원 아님");
             petSitterPage = mainBoardService.getList(page);
             System.out.println("회원 아님");
         }
+
         petSitterPage.stream().toList();
         model.addAttribute("petSitterPage", petSitterPage);
+
         return "mainboard/list";
     }
 
@@ -70,9 +67,9 @@ public class MainBoardController {
     public String getDetail(Model model, @PathVariable("sitterNo") Long no) {
         PetSitterDTO petSitter = mainBoardService.getDetail(no);
         model.addAttribute("petSitter", petSitter);
+
         return "mainboard/detail";
     }
-
 
     //search
     @GetMapping("/search")
@@ -85,31 +82,31 @@ public class MainBoardController {
         String day = (String) map.get("day");
         String timeStr = (String) map.get("time");
         Page<PetSitterDTO> petSitterDTOPage = mainBoardService.searchList(pno, category, petCategory, petAddress, day, timeStr);
+
         return petSitterDTOPage;
     }
-
 
     //recommend
     @PostMapping("/recommend")
     @ResponseBody
-    public Page<PetSitterDTO> recommendList(@RequestParam Map<String, Object> map){
+    public Page<PetSitterDTO> recommendList(@RequestParam Map<String, Object> map) {
         String category = (String) map.get("category");
         String petCategory = (String) map.get("petCategory");
         String address = (String) map.get("sitterAddress");
-        String sitterAddress = address.substring(0,2);
-        String sitterNoValue = (String)map.get("sitterNoValue");
+        String sitterAddress = address.substring(0, 2);
+        String sitterNoValue = (String) map.get("sitterNoValue");
         Long sitterNo = Long.parseLong(sitterNoValue);
         Page<PetSitterDTO> petSitterDTOList = mainBoardService.recommendList(category, petCategory, sitterAddress, sitterNo);
+
         return petSitterDTOList;
     }
 
-
-    //********************************혜지시작
     //글등록 폼 요청
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/write")
     public String writeForm(WriteForm writeForm) {
         logger.info("MainBoardController-writeForm()진입");
+
         return "mainboard/writeForm";
     }
 
@@ -128,15 +125,12 @@ public class MainBoardController {
             return "mainboard/writeForm";
         }
 
-
         // WriteForm을 PetSitterDTO로 변환
         PetSitterDTO petSitterDTO = writeForm.convertToPetSitterDTO();
-
         mainBoardService.write(petSitterDTO, id, boardFile);
 
         return "redirect:/mainboard/list";
     }
-
 
     //게시글 수정 폼 요청
     @GetMapping("/modify/{sitterNo}")
@@ -161,14 +155,15 @@ public class MainBoardController {
         writeForm.setPetAddress(petSitterDTO.getPetAddress());
 
         model.addAttribute("writeForm", writeForm);
+
         return "mainboard/updateForm";
     }
 
 
     //게시글 수정 처리
-    @PostMapping ("/modify/{sitterNo}")
-    public String update (@PathVariable Long sitterNo, @Valid WriteForm writeForm, BindingResult bindingResult,
-                          Principal principal, MultipartFile[] boardFile, String id) throws IOException {
+    @PostMapping("/modify/{sitterNo}")
+    public String update(@PathVariable Long sitterNo, @Valid WriteForm writeForm, BindingResult bindingResult,
+                         Principal principal, MultipartFile[] boardFile, String id) throws IOException {
         logger.info("MainBoardController-update() 진입");
 
         id = principal.getName();
@@ -177,19 +172,16 @@ public class MainBoardController {
             return "mainboard/editForm";
         }
 
-        mainBoardService.update(writeForm, sitterNo,boardFile, id);
+        mainBoardService.update(writeForm, sitterNo, boardFile, id);
 
-        return String.format("redirect:/mainboard/detail/%s", + sitterNo);
+        return String.format("redirect:/mainboard/detail/%s", +sitterNo);
 
     }
-
 
     //게시글 삭제
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/delete/{sitterNo}")
     public String delete(@PathVariable Long sitterNo, Principal principal) {
-        logger.info("MainBoardController-delete() 진입");
-
         String id = principal.getName();
 
         mainBoardService.delete(sitterNo, id);
@@ -200,8 +192,7 @@ public class MainBoardController {
     //추천
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/incrementLikes/{sitterNo}")
-    public String incrementLikes (@PathVariable Long sitterNo,
-                                  Principal principal) {
+    public String incrementLikes(@PathVariable Long sitterNo, Principal principal) {
         mainBoardService.incrementLikes(sitterNo);
         return String.format("redirect:/mainboard/detail/{sitterNo}", sitterNo);
     }
@@ -214,6 +205,7 @@ public class MainBoardController {
         Page<PetSitterDTO> petSitterDTOPage = mainBoardService.titleSearch(keyword, page);
         model.addAttribute("petSitterPage", petSitterDTOPage);
         model.addAttribute("keyword", keyword);
+
         return "mainboard/titleSearchList";
     }
 }

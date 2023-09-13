@@ -8,7 +8,11 @@ import com.pet.sitter.mainboard.dto.PetSitterDTO;
 import com.pet.sitter.mainboard.dto.PetSitterFileDTO;
 import com.pet.sitter.member.dto.MemberDTO;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,14 +44,17 @@ public class AdminBoardService {
             petSitterDTO.setPetViewCnt(petsitter.getPetViewCnt());
             petSitterDTO.setStartTime(petsitter.getStartTime());
             petSitterDTO.setEndTime(petsitter.getEndTime());
+
             return petSitterDTO;
         }).getContent();
+
         return new PageImpl<>(petSitterDTOList, pageable, petSitterPage.getTotalElements());
     }
 
     //게시글 상세 조회
     public PetSitterDTO getBoardDetail(Long sitterNo) {
         Optional<Petsitter> optionalPetsitter = adminBoardRepository.findBySitterNo(sitterNo);
+
         if (!optionalPetsitter.isPresent()) {
             return null; // 해당하는 경우에 맞게 처리하세요
         }
@@ -65,6 +72,7 @@ public class AdminBoardService {
 
         if (!petsitter.getPetsitterFileList().isEmpty()) {
             List<PetSitterFileDTO> petSitterFileDTOList = new ArrayList<>();
+
             for (int i = 0; i < petsitter.getPetsitterFileList().size(); i++) {
                 PetSitterFileDTO petSitterFileDTO = PetSitterFileDTO.builder().petsitterFile(petsitter.getPetsitterFileList().get(i)).build();
                 petSitterFileDTOList.add(petSitterFileDTO);
@@ -72,14 +80,11 @@ public class AdminBoardService {
             petSitterDTO.setFileDTOList(petSitterFileDTOList);
         }
 
-        System.out.println("파일 출력 = " + petSitterDTO.getFileDTOList());
         return petSitterDTO;
     }
 
     //수정처리
     public void modify(Petsitter petsitter, String petTitle, String petContent) {
-        System.out.println("modify 서비스 진입");
-        System.out.println(petsitter.toString());
         petsitter.setPetTitle(petTitle);
         petsitter.setPetContent(petContent);
         adminBoardRepository.save(petsitter);
@@ -87,9 +92,11 @@ public class AdminBoardService {
 
     public Petsitter getModify(Long sitterNo) {
         Optional<Petsitter> petsitter = adminBoardRepository.findBySitterNo(sitterNo);
+
         if (!petsitter.isPresent()) {
             throw new DataNotFoundException("오류났어요....");
         }
+
         return petsitter.get();
     }
 
@@ -98,5 +105,4 @@ public class AdminBoardService {
     public void delete(Long sitterNo) {
         adminBoardRepository.deleteById(sitterNo);
     }
-
 }

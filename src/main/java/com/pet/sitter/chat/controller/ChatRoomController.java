@@ -45,7 +45,6 @@ public class ChatRoomController {
     @PostMapping("/room")
     @ResponseBody
     public ChatRoomDTO createRoom(@RequestParam("petsitterNo") Long id, @RequestParam("host") String hostId, @RequestParam("guest") String guestId) {
-
         return chatRoomService.createChatRoom(id, hostId, guestId);
     }
 
@@ -64,7 +63,7 @@ public class ChatRoomController {
         Matching matching = chatRoomService.getMatchingByRoomId(roomId);
 
         if (chatRoom != null) {
-            if (matching != null){
+            if (matching != null) {
                 model.addAttribute("matchChatRoomNo", matching.getChatRoomNo());
             }
             model.addAttribute("hostId", chatRoom.getHostId());
@@ -76,6 +75,7 @@ public class ChatRoomController {
 
             return "/chat/roomdetail";
         } else {
+
             return "redirect:/chat/room";
         }
     }

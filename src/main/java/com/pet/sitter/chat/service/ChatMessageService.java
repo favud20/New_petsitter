@@ -5,7 +5,11 @@ import com.pet.sitter.chat.dto.ChatRoomDTO;
 import com.pet.sitter.chat.repository.ChatMessageRepository;
 import com.pet.sitter.chat.repository.ChatRoomRepository;
 import com.pet.sitter.chat.repository.MatchingRepository;
-import com.pet.sitter.common.entity.*;
+import com.pet.sitter.common.entity.ChatMessage;
+import com.pet.sitter.common.entity.ChatRoom;
+import com.pet.sitter.common.entity.Matching;
+import com.pet.sitter.common.entity.Member;
+import com.pet.sitter.common.entity.Petsitter;
 import com.pet.sitter.exception.DataNotFoundException;
 import com.pet.sitter.mainboard.dto.PetSitterDTO;
 import com.pet.sitter.mainboard.repository.PetsitterRepository;
@@ -32,20 +36,18 @@ public class ChatMessageService {
     private final MatchingRepository matchingRepository;
 
     public void enterMessage(Long chatRoomId, String memberId) {
-
         ChatRoom chatRoom = chatRoomRepository.findChatRoomById(chatRoomId);
         Member member = memberRepository.findMemberByMemberId(memberId);
         PetSitterDTO petSitterDTO = new PetSitterDTO(petsitterRepository.findBySitterNo(chatRoom.getPetsitter().getSitterNo()));
-
         ChatRoomDTO chatRoomDTO = new ChatRoomDTO(chatRoom, petSitterDTO);
         MemberDTO memberDTO = new MemberDTO(member);
         ChatMessageDTO message = new ChatMessageDTO();
+        ChatMessage chatMessage = new ChatMessage();
 
         message.setChatRoom(chatRoomDTO);
         message.setSender(memberDTO);
         message.setContent(memberDTO.getNickname() + "님이 입장하셨습니다.");
 
-        ChatMessage chatMessage = new ChatMessage();
         chatMessage.setContent(message.getContent());
         chatMessage.setSendTime(LocalDateTime.now());
         chatMessage.setChatRoom(chatRoom);
@@ -56,15 +58,9 @@ public class ChatMessageService {
     }
 
     public void sendMessage(Long roomId, String memberId, ChatMessageDTO message) {
-        System.out.println("----------------MessageService Access----------------");
-        System.out.println("chatRoomId: " + roomId);
-        System.out.println("chatContent: " + message.getContent());
         ChatRoom chatRoom = chatRoomRepository.findChatRoomById(roomId);
-        System.out.println("Date: " + chatRoom.getCreateDate());
-        Member sender11 = memberRepository.findMemberByMemberId(memberId);
-        System.out.println("NickName: " + sender11.getNickname());
-        System.out.println("Member11: " + sender11);
-        MemberDTO member = new MemberDTO(sender11);
+        Member sender = memberRepository.findMemberByMemberId(memberId);
+        MemberDTO member = new MemberDTO(sender);
 
         message.setSender(member);
 
@@ -72,15 +68,15 @@ public class ChatMessageService {
         chatMessage.setContent(message.getContent());
         chatMessage.setSendTime(LocalDateTime.now());
         chatMessage.setChatRoom(chatRoom);
-        chatMessage.setSender(sender11);
-        System.out.println("Message Content: " + chatMessage.getContent());
-        chatMessageRepository.save(chatMessage);
+        chatMessage.setSender(sender);
 
+        chatMessageRepository.save(chatMessage);
         messagingTemplate.convertAndSend("/sub/chat/room/" + chatRoom.getRoomUUID(), message);
     }
 
     public List<ChatMessageDTO> getMessageListByRoomId(Long roomId) {
         List<ChatMessage> messageList = chatMessageRepository.findChatMessagesByChatRoom_Id(roomId);
+
         return messageList.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
@@ -113,14 +109,18 @@ public class ChatMessageService {
         Matching matching = new Matching();
         ChatRoom chatRoom = chatRoomRepository.findChatRoomById(roomId);
         Optional<Member> member = memberRepository.findBymemberId(hostId);
+
         if (member.isEmpty()) {
             throw new DataNotFoundException("회원이 없습니다.");
         }
+
         Member hostMember = member.get();
         Optional<Member> member2 = memberRepository.findBymemberId(guestId);
+
         if (member2.isEmpty()) {
             throw new DataNotFoundException("회원이 없습니다.");
         }
+
         Member guestMember = member2.get();
 
         Petsitter petsitter = chatRoom.getPetsitter();
@@ -129,6 +129,7 @@ public class ChatMessageService {
         matching.setMember(hostMember);
         matching.setMember2(guestMember);
         matching.setChatRoomNo(roomId);
+
         matchingRepository.save(matching);
     }
 

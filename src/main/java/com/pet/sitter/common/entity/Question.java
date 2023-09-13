@@ -1,11 +1,22 @@
 package com.pet.sitter.common.entity;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.pet.sitter.qna.service.AnswerService;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -47,20 +58,16 @@ public class Question {
     @Column
     private String qnaFile;
 
-
     @ManyToOne
-    @JoinColumn (name = "id", referencedColumnName = "id")
+    @JoinColumn(name = "id", referencedColumnName = "id")
     private Member member;
 
+    @Getter
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<QuestionFile> questionList = new ArrayList<>();
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
     private List<Answer> answerList;
-
-    public List<QuestionFile> getQuestionList() {
-        return questionList;
-    }
 
     public void setQuestionFile(List<QuestionFile> questionList) {
         this.questionList = questionList;
@@ -72,7 +79,7 @@ public class Question {
     }
 
     @Builder
-    public Question(Long qnaNo, String qnaTitle, String qnaContent, LocalDateTime qnaDate, String qnaPw, Integer qnaViewCnt, String qnaFile, Member member,List<QuestionFile> questionList,List<Answer> answerList) {
+    public Question(Long qnaNo, String qnaTitle, String qnaContent, LocalDateTime qnaDate, String qnaPw, Integer qnaViewCnt, String qnaFile, Member member, List<QuestionFile> questionList, List<Answer> answerList) {
         this.qnaNo = qnaNo;
         this.qnaTitle = qnaTitle;
         this.qnaContent = qnaContent;

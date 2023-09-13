@@ -9,8 +9,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.security.Principal;
 import java.util.List;
@@ -25,9 +27,6 @@ public class ChatMessageController {
 
     @Autowired
     private ChatRoomService chatRoomService;
-
-    @Autowired
-    private SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat/message")
     public void message(@Payload ChatMessageDTO chatMessageDTO) {
@@ -50,21 +49,20 @@ public class ChatMessageController {
     //매칭 테이블
     @GetMapping("/chat/room/matching")
     public void matching(Principal principal, @RequestParam Map<String, Object> map) {
-        System.out.println("matchingController 접근");
-        System.out.println("roomUUID: " + map.get("roomUUID"));
         ChatRoom chatRoom = chatRoomService.getChatRoomByRoomUUID((String) map.get("roomUUID"));
         Long roomId = chatRoom.getId();
         String hostId = chatRoom.getHostId();
         String guestId = chatRoom.getGuestId();
-        String roomUUID = chatRoom.getRoomUUID();
+
         if (!principal.getName().equals(hostId)) {
             throw new DataNotFoundException("hostId가 아닙니다.");
         }
+
         chatMessageService.matching(roomId, hostId, guestId);
     }
 
     @GetMapping("/chat/room/delmatching")
-    public void delMatching(Principal principal, @RequestParam Map<String, Object> map){
+    public void delMatching(Principal principal, @RequestParam Map<String, Object> map) {
         chatMessageService.delMatching(chatRoomService.getChatRoomByRoomUUID((String) map.get("roomUUID")).getId());
     }
 }
