@@ -9,24 +9,6 @@
     text-align: center;
 }
 
-/*!* 요일 선택 *!
-input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    width: 15px;
-    height: 15px;
-    border: 1px solid #4f5050;
-    border-radius: 50%; !* 동그랗게 만듭니다 *!
-    outline: none;
-    cursor: pointer;
-}
-
-!* 체크된 상태일 때 배경색 추가 *!
-input[type="checkbox"]:checked {
-    background-color: #0d6efd;
-}*/
-
 #sample6_address, #sample6_detailAddress {
     width: 570px;
     display: inline-block;

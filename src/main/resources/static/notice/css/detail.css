@@ -4,7 +4,6 @@
     text-align: center;
 }
 
-
 #container h1 {
     font-weight: normal;
     text-transform: uppercase;
@@ -17,7 +16,7 @@
 
 .style-1 {
     font-family: "Pacifico", sans-serif;
-    text-transform: none!important;
+    text-transform: none !important;
 }
 
 .style-1:before {

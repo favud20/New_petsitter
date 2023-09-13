@@ -20,18 +20,17 @@ time, mark, audio, video {
     vertical-align: baseline;
 }
 
-
 /*!* HTML5 display-role reset for older browsers *!*/
 article, aside, details, figcaption, figure,
 footer, header, hgroup, menu, nav, section {
     display: block;
 }
 
-
 body {
     line-height: 1;
     width: 100%;
 }
+
 ol, ul {
     list-style: none;
 }
@@ -43,7 +42,7 @@ ol, ul {
 }
 
 .option {
-    width : 700px;
+    width: 700px;
 }
 
 .petSitter-cover {
@@ -94,7 +93,7 @@ ol, ul {
     height: 200px;
 }
 
-.item_name{
+.item_name {
     margin-top: 10px;
     font-weight: bold;
     font-size: 17px;
@@ -116,7 +115,7 @@ ol, ul {
     font-size: 15px;
 }
 
-.item_cost{
+.item_cost {
     margin-top: 10px;
     font-size: 15px;
     color: #6c757d;
@@ -124,7 +123,7 @@ ol, ul {
     padding: 0px 5px;
 }
 
-.item_place{
+.item_place {
     font-weight: 400;
     font-size: smaller;
     margin-top: 10px;
@@ -154,7 +153,7 @@ ol, ul {
     text-align: center;
 }
 
-.petSitterContainer{
+.petSitterContainer {
     display: flex;
     flex-wrap: wrap;
     flex-direction: row;
@@ -162,7 +161,7 @@ ol, ul {
     justify-content: center;
 }
 
-.petSitterItem{
+.petSitterItem {
     width: 200px;
     height: 300px;
     flex-grow: 0;
@@ -171,8 +170,8 @@ ol, ul {
 }
 
 .form_content {
-    display : inline;
-    margin : 50px;
+    display: inline;
+    margin: 50px;
 }
 
 .form {
@@ -180,14 +179,14 @@ ol, ul {
     width: 1280px;
 }
 
-.search_text{
+.search_text {
     font-weight: bold;
     font-size: 15px;
     margin: 0 5px 0 8px;
 }
 
 #category, #petCategory, #address, #day {
-    width : 100px;
+    width: 100px;
 }
 
 #time, #search {
@@ -226,6 +225,7 @@ ol, ul {
     background-color: #ff9100;
     text-align: center;
 }
+
 .petSitter-cover {
     display: flex;
     justify-content: center;
